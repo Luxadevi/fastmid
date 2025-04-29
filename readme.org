@@ -1,0 +1,313 @@
+#+title: Readme
+
+
+#+begin_src shell
+curl http://127.0.0.1:8000
+
+#+end_src
+
+#+RESULTS:
+: {"Hello":"World"}
+
+
+#+begin_src shell
+curl http://127.0.0.1:8000/json
+
+#+end_src
+
+#+RESULTS:
+: /home/luxa/projects/luxadevi/fastmid
+
+#+begin_src bash :results output replace :wrap "src json" :exports results
+curl -s http://127.0.0.1:8000/shell/uv
+
+#+end_src
+#+begin_src bash :results output replace :wrap "src json" :exports results :async
+curl -s http://127.0.0.1:8000/shell/btop| jq . # Using jq for pretty-printing
+#+end_src
+
+#+RESULTS:
+#+begin_src json
+"ifailed"
+#+end_src
+
+#+begin_src bash :results output replace :wrap "src json" :exports results :async
+curl -X 'GET' \
+  'http://127.0.0.1:8000/arg' \
+  -H 'accept: application/json' \
+  -H 'Content-Type: application/json' \
+  -d '{
+  "command": "ls",
+  "argumens": " -alh"
+}'
+
+#+end_src
+
+#+RESULTS:
+#+begin_src json
+{"args":"ls -alh","returncode":0,"stdout":"total 128K\ndrwxr-xr-x 5 luxa users 4,0K apr 27 18:08 .\ndrwxr-xr-x 8 luxa users 4,0K apr 27 15:54 ..\ndrwxr-xr-x 7 luxa users 4,0K apr 27 17:55 .git\n-rw-r--r-- 1 luxa users 3,4K apr 27 15:54 .gitignore\n-rw-r--r-- 1 luxa users 2,0K apr 27 19:41 love\n-rw-r--r-- 1 luxa users 1,5K apr 27 19:45 main.py\ndrwxr-xr-x 2 luxa users 4,0K apr 27 19:45 __pycache__\n-rw-r--r-- 1 luxa users 1,3K apr 27 18:28 pyproject.toml\n-rw-r--r-- 1 luxa users    5 apr 27 15:54 .python-version\n-rw-r--r-- 1 luxa users   29 apr 27 15:54 README.md\n-rw-r--r-- 1 luxa users  975 apr 27 19:46 readme.org\n-rw-r--r-- 1 luxa users  77K apr 27 18:28 uv.lock\ndrwxr-xr-x 4 luxa users 4,0K apr 27 15:56 .venv\n","stderr":""}
+#+end_src
+
+#+begin_src bash :results output replace :wrap "src text" :exports results :async
+curl -X 'GET' \
+  'http://127.0.0.1:8000/arg' \
+  -H 'accept: application/json' \
+  -H 'Content-Type: application/json' \
+  -d '{
+  "command": "ls",
+  "argumens": " -alh"
+}' | jq -r '.stdout' # Pipe to jq to extract raw stdout
+
+#+end_src
+
+#+RESULTS:
+#+begin_src text
+total 128K
+drwxr-xr-x 5 luxa users 4,0K apr 27 18:08 .
+drwxr-xr-x 8 luxa users 4,0K apr 27 15:54 ..
+drwxr-xr-x 7 luxa users 4,0K apr 27 17:55 .git
+-rw-r--r-- 1 luxa users 3,4K apr 27 15:54 .gitignore
+-rw-r--r-- 1 luxa users 2,0K apr 27 19:41 love
+-rw-r--r-- 1 luxa users 1,5K apr 27 19:45 main.py
+drwxr-xr-x 2 luxa users 4,0K apr 27 19:45 __pycache__
+-rw-r--r-- 1 luxa users 1,3K apr 27 18:28 pyproject.toml
+-rw-r--r-- 1 luxa users    5 apr 27 15:54 .python-version
+-rw-r--r-- 1 luxa users   29 apr 27 15:54 README.md
+-rw-r--r-- 1 luxa users  975 apr 27 19:46 readme.org
+-rw-r--r-- 1 luxa users  77K apr 27 18:28 uv.lock
+drwxr-xr-x 4 luxa users 4,0K apr 27 15:56 .venv
+
+#+end_src
+
+#+begin_src bash :results output replace :wrap "src text" :exports results :async
+curl -X 'GET' \
+  'http://127.0.0.1:8000/arg' \
+  -H 'accept: application/json' \
+  -H 'Content-Type: application/json' \
+  -d '{
+  "command": "docker run",
+  "argumens": "--rm --network=host datmanslo/catt --cast"
+}' | jq -r '.stdout' # Pipe to jq to extract raw stdout
+
+#+end_src
+
+docker run --rm --network=host datmanslo/catt cast https://www.youtube.com/watch?v=7t2alSnE2-I
+#+RESULTS:
+#+begin_src text
+
+#+end_src
+
+#+begin_src bash :results output replace :wrap "src text" :exports results :async
+curl -X 'GET' \
+  'http://127.0.0.1:8000/arg' \
+  -H 'accept: application/json' \
+  -H 'Content-Type: application/json' \
+  -d '{
+  "command": "ls",
+  "argumens": "-alh"
+}' | jq -r '"Args: \(.args)\nReturn Code: \(.returncode)\nStderr: \(.stderr)\n---\nStdout:\n\(.stdout)"'
+
+#+end_src
+
+#+RESULTS:
+#+begin_src text
+Args: ls -alh
+Return Code: 0
+Stderr:
+---
+Stdout:
+total 128K
+drwxr-xr-x 5 luxa users 4,0K apr 27 18:08 .
+drwxr-xr-x 8 luxa users 4,0K apr 27 15:54 ..
+drwxr-xr-x 7 luxa users 4,0K apr 27 17:55 .git
+-rw-r--r-- 1 luxa users 3,4K apr 27 15:54 .gitignore
+-rw-r--r-- 1 luxa users 2,0K apr 27 19:41 love
+-rw-r--r-- 1 luxa users 1,5K apr 27 19:52 main.py
+drwxr-xr-x 2 luxa users 4,0K apr 27 19:52 __pycache__
+-rw-r--r-- 1 luxa users 1,3K apr 27 18:28 pyproject.toml
+-rw-r--r-- 1 luxa users    5 apr 27 15:54 .python-version
+-rw-r--r-- 1 luxa users   29 apr 27 15:54 README.md
+-rw-r--r-- 1 luxa users 3,4K apr 27 19:50 readme.org
+-rw-r--r-- 1 luxa users  77K apr 27 18:28 uv.lock
+drwxr-xr-x 4 luxa users 4,0K apr 27 15:56 .venv
+
+#+end_src
+
+#+begin_src bash :results output replace :wrap "src text" :exports results :async
+curl -X 'GET' \
+  'http://127.0.0.1:8000/cast \
+  -H 'accept: application/json' \
+  -H 'Content-Type: application/json' \
+  -d '{
+  "website": "https://www.youtube.com/watch?v=7t2alSnE2-I",
+}' | jq -r '"Args: \(.args)\nReturn Code: \(.returncode)\nStderr: \(.stderr)\n---\nStdout:\n\(.stdout)"'
+
+#+end_src
+
+#+RESULTS:
+#+begin_src text
+#+end_src
+*** Invalid Link
+#+begin_src bash :results output replace :wrap "src text" :exports results :async
+curl -X 'GET' \
+  'http://127.0.0.1:8000/cast' \
+  -H 'accept: application/json' \
+  -H 'Content-Type: application/json' \
+  -d '{
+  "website": "https://www.youtube.com/watch?v=7t2alSnE"
+}'
+#+end_src
+
+#+RESULTS:
+#+begin_src text
+"ERROR: [youtube:truncated_id] 7t2alSnE: Incomplete YouTube ID 7t2alSnE. URL https://www.youtube.com/watch?v=7t2alSnE looks truncated.\nError: Remote resource not found.\n"
+#+end_src
+
+*** Valid Link
+#+begin_src bash :results output replace :wrap "src text" :exports results :async
+curl -X 'GET' \
+  'http://127.0.0.1:8000/cast' \
+  -H 'accept: application/json' \
+  -H 'Content-Type: application/json' \
+  -d '{
+  "website": "https://www.youtube.com/watch?v=7t2alSnE2-I"
+}'
+#+end_src
+
+#+RESULTS:
+#+begin_src text
+"ERROR: [youtube:truncated_id] 7t2alSnE: Incomplete YouTube ID 7t2alSnE. URL https://www.youtube.com/watch?v=7t2alSnE looks truncated.\nError: Remote resource not found.\n"
+#+end_src
+
+#+begin_src bash :results output replace :wrap "src text" :exports results :async
+curl -X 'PUT' \
+  'http://127.0.0.1:8000/clipboard' \
+  -H 'accept: application/json' \
+  -H 'Content-Type: application/json' \
+  -d '{
+  "store": "http://127.0.0.1:8000/docs#/default/get_clipboard_clipboard_get"
+}'
+#+end_src
+
+#+RESULTS:
+#+begin_src text
+{"message":"Text written to clipboard","caller":{"ip":"127.0.0.1","hostname":"localhost"}}
+#+end_src
+
+#+RESULTS:
+#+begin_src text
+{"detail":[{"type":"json_invalid","loc":["body",80],"msg":"JSON decode error","input":{},"ctx":{"error":"Extra data"}}]}
+#+end_src
+
+#+begin_src bash :results output replace :wrap "src text" :exports results :async
+curl -X 'GET' \
+  'http://127.0.0.1:8000/clipboard' \
+  -H 'accept: application/json' | jq .
+#+end_src
+
+#+RESULTS:
+#+begin_src text
+{
+  "message": "Error getting clipboard entries: 'ClipboardStorage' object has no attribute 'get_entries'"
+}
+#+end_src
+
+*** Rofi Integration
+
+Here's a Rofi script to interact with the clipboard API:
+
+#+begin_src bash :tangle rofi-clipboard.sh
+#!/bin/bash
+
+# Get clipboard entries from API
+entries=$(curl -s http://127.0.0.1:8000/clipboard | jq -r '.entries[] | "\(.timestamp) | \(.caller.hostname) | \(.content)"')
+
+# Show entries in Rofi and get selection
+selected=$(echo "$entries" | rofi -dmenu -i -p "Clipboard History" -theme-str 'window {width: 80%;} listview {lines: 10;}')
+
+# Extract content from selection and copy to system clipboard
+if [ -n "$selected" ]; then
+    content=$(echo "$selected" | awk -F' | ' '{print $NF}')
+    echo -n "$content" | xclip -selection clipboard
+    notify-send "Clipboard" "Content copied to clipboard"
+fi
+#+end_src
+
+To use this script:
+
+1. Save it as ~/.local/bin/rofi-clipboard.sh
+2. Make it executable: chmod +x ~/.local/bin/rofi-clipboard.sh
+3. Bind it to a key in your window manager, for example in i3:
+   #+begin_src text
+   bindsym $mod+c exec ~/.local/bin/rofi-clipboard.sh
+   #+end_src
+** TestDataScript
+
+#+begin_src python :tangle generate_test_data.py
+#!/usr/bin/env python3
+import random
+import string
+import requests
+from datetime import datetime, timedelta
+import socket
+import argparse
+from multiprocessing import Pool, Manager
+from tqdm import tqdm
+
+def random_string(length=10):
+    return ''.join(random.choices(string.ascii_letters + string.digits, k=length))
+
+def random_ip():
+    return f"192.168.{random.randint(1, 255)}.{random.randint(1, 255)}"
+
+def random_hostname():
+    return f"test-{random_string(5)}.example.com"
+
+def create_entry(args):
+    i, total = args
+    base_url = "http://127.0.0.1:8000"
+    
+    # Generate random data
+    content = random_string(random.randint(5, 50))
+    
+    # Create the entry
+    data = {
+        "store": content
+    }
+    
+    # Send the request
+    try:
+        response = requests.put(f"{base_url}/clipboard", json=data)
+        if response.status_code == 200:
+            return True, f"Created entry {i+1}/{total}: {content}"
+        else:
+            return False, f"Failed to create entry {i+1}: {response.text}"
+    except Exception as e:
+        return False, f"Error creating entry {i+1}: {str(e)}"
+
+def generate_test_data(num_entries, num_processes=4):
+    # Create a pool of workers
+    with Pool(processes=num_processes) as pool:
+        # Create arguments for each entry
+        args = [(i, num_entries) for i in range(num_entries)]
+        
+        # Process entries in parallel with progress bar
+        results = list(tqdm(
+            pool.imap(create_entry, args),
+            total=num_entries,
+            desc="Generating entries"
+        ))
+        
+        # Print any errors
+        for success, message in results:
+            if not success:
+                print(message)
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description='Generate test data for clipboard API')
+    parser.add_argument('num_entries', type=int, help='Number of entries to generate')
+    parser.add_argument('--processes', type=int, default=12, help='Number of processes to use (default: 4)')
+    args = parser.parse_args()
+    
+    generate_test_data(args.num_entries, args.processes)
+#+end_src

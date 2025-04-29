@@ -1,0 +1,18 @@
+[
+  {
+    "timestamp": "2025-04-29T01:08:43.922280",
+    "caller": {
+      "ip": "127.0.0.1",
+      "hostname": "localhost"
+    },
+    "content": "somewhat"
+  },
+  {
+    "timestamp": "2025-04-29T01:09:55.534157",
+    "caller": {
+      "ip": "127.0.0.1",
+      "hostname": "localhost"
+    },
+    "content": "somewhat"
+  }
+]
