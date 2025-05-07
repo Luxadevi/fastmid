@@ -127,4 +127,3 @@ async def get_clipboard():
         return {"entries": entries}
     except Exception as e:
         return {"message": f"Error getting clipboard entries: {str(e)}"}
-

@@ -111,26 +111,28 @@ curl -X 'GET' \
 
 #+RESULTS:
 #+begin_src text
-Args: ls -alh
-Return Code: 0
-Stderr:
+Args: null
+Return Code: null
+Stderr: null
 ---
 Stdout:
-total 128K
-drwxr-xr-x 5 luxa users 4,0K apr 27 18:08 .
-drwxr-xr-x 8 luxa users 4,0K apr 27 15:54 ..
-drwxr-xr-x 7 luxa users 4,0K apr 27 17:55 .git
--rw-r--r-- 1 luxa users 3,4K apr 27 15:54 .gitignore
--rw-r--r-- 1 luxa users 2,0K apr 27 19:41 love
--rw-r--r-- 1 luxa users 1,5K apr 27 19:52 main.py
-drwxr-xr-x 2 luxa users 4,0K apr 27 19:52 __pycache__
--rw-r--r-- 1 luxa users 1,3K apr 27 18:28 pyproject.toml
--rw-r--r-- 1 luxa users    5 apr 27 15:54 .python-version
--rw-r--r-- 1 luxa users   29 apr 27 15:54 README.md
--rw-r--r-- 1 luxa users 3,4K apr 27 19:50 readme.org
--rw-r--r-- 1 luxa users  77K apr 27 18:28 uv.lock
-drwxr-xr-x 4 luxa users 4,0K apr 27 15:56 .venv
+null
+#+end_src
 
+#+begin_src bash :results output replace :wrap "src text" :exports results :async
+curl -X 'GET' \
+  'http://127.0.0.1:8000/arg' \
+  -H 'accept: application/json' \
+  -H 'Content-Type: application/json' \
+  -d '{
+  "token": "c58330aaaa224b444e89f9e3a5adc1a91b28603d87bda74b68ee7b0ce3d3e79a",
+  "command": "ls",
+  "argumens": "-alh"
+}'
+#+end_src
+
+#+RESULTS:
+#+begin_src text
 #+end_src
 
 #+begin_src bash :results output replace :wrap "src text" :exports results :async
@@ -175,13 +177,10 @@ curl -X 'GET' \
 #+end_src
 
 #+RESULTS:
-#+begin_src text
-"ERROR: [youtube:truncated_id] 7t2alSnE: Incomplete YouTube ID 7t2alSnE. URL https://www.youtube.com/watch?v=7t2alSnE looks truncated.\nError: Remote resource not found.\n"
-#+end_src
 
 #+begin_src bash :results output replace :wrap "src text" :exports results :async
 curl -X 'PUT' \
-  'http://127.0.0.1:8000/clipboard' \
+  'http://192.168.1.125:8000/clipboard' \
   -H 'accept: application/json' \
   -H 'Content-Type: application/json' \
   -d '{
@@ -191,7 +190,7 @@ curl -X 'PUT' \
 
 #+RESULTS:
 #+begin_src text
-{"message":"Text written to clipboard","caller":{"ip":"127.0.0.1","hostname":"localhost"}}
+{"message":"Text written to clipboard","caller":{"ip":"192.168.1.65","hostname":"nixos.home"}}
 #+end_src
 
 #+RESULTS:
@@ -201,15 +200,13 @@ curl -X 'PUT' \
 
 #+begin_src bash :results output replace :wrap "src text" :exports results :async
 curl -X 'GET' \
-  'http://127.0.0.1:8000/clipboard' \
-  -H 'accept: application/json' | jq .
-#+end_src
+  'http://192.168.1.125:8000/clipboard' \
+  -H 'accept: application/json'
+  #+end_src
 
 #+RESULTS:
 #+begin_src text
-{
-  "message": "Error getting clipboard entries: 'ClipboardStorage' object has no attribute 'get_entries'"
-}
+{"entries":[{"id":1,"timestamp":"2025-04-29T02:41:58.640996","caller":{"ip":"192.168.1.65","hostname":"nixos.home"},"content":"http://127.0.0.1:8000/docs#/default/get_clipboard_clipboard_get"}]}
 #+end_src
 
 *** Rofi Integration
@@ -217,17 +214,33 @@ curl -X 'GET' \
 Here's a Rofi script to interact with the clipboard API:
 
 #+begin_src bash :tangle rofi-clipboard.sh
-#!/bin/bash
-
-# Get clipboard entries from API
-entries=$(curl -s http://127.0.0.1:8000/clipboard | jq -r '.entries[] | "\(.timestamp) | \(.caller.hostname) | \(.content)"')
-
-# Show entries in Rofi and get selection
-selected=$(echo "$entries" | rofi -dmenu -i -p "Clipboard History" -theme-str 'window {width: 80%;} listview {lines: 10;}')
-
+#!/bin/sh
+# Get clipboard entries from API, using Tab separator and JSON encoding for content
+entries=$(curl -sf http://192.168.1.125:8000/clipboard | \
+          jq -r '.entries[] | "\(.timestamp)\t\(.caller.hostname)\t\(.content | @json)"')
+# Check if curl or jq failed
+if [ $? -ne 0 ]; then
+    notify-send -u critical "Clipboard Error" "Failed to fetch or parse clipboard data."
+    exit 1
+fi
+# Handle empty entries
+if [ -z "$entries" ]; then
+    rofi -e "Clipboard history is empty."
+    exit 0
+fi
+# Show entries in Rofi and get selection with custom key bindings
+selected=$(echo "$entries" | rofi -dmenu -i -p "Clipboard History" \
+            -theme-str 'window {width: 80%;} listview {lines: 10;}' \
+            -kb-row-down "Down,Control+j,Control+n" \
+            -kb-row-up "Up,Control+k,Control+p")
 # Extract content from selection and copy to system clipboard
 if [ -n "$selected" ]; then
-    content=$(echo "$selected" | awk -F' | ' '{print $NF}')
+    # Use cut to get the JSON-encoded string part (field 3 onwards)
+    json_encoded_content=$(echo "$selected" | cut -f3- -d$'\t')
+    # Use jq to decode the JSON string back into the raw content
+    # The -r flag removes the outer quotes from the resulting string
+    content=$(echo "$json_encoded_content" | jq -r '.')
+    # Copy the exact content to the clipboard
     echo -n "$content" | xclip -selection clipboard
     notify-send "Clipboard" "Content copied to clipboard"
 fi
@@ -311,3 +324,23 @@ if __name__ == "__main__":
     
     generate_test_data(args.num_entries, args.processes)
 #+end_src
+
+
+** Password/Auth;
+
+Steps to follow;
+
++ Generate string when booting (safe)
+
++ Hash this string
+
++ Store Hash as one authorization key
+
++ extra encode payload with key
+
+*** Next steps;
+
++ Add DB for User-Storage
++ Add function for DB-insert
++ Add function for encrypt/decrypt
++ Retrieve User-Storage
